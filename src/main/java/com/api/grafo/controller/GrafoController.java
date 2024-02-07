@@ -47,4 +47,15 @@ public class GrafoController {
 		return ResponseEntity.ok(menorCaminho);
 	}
 
+	@PostMapping("/routes/{graphId}/from/{town1}/to/{town2}")
+	public ResponseEntity<List<responseRotaDTO>> encontrarRotasComGrafoSalvo(
+			@PathVariable("graphId") Long graphId,
+			@PathVariable("town1") String town1,
+			@PathVariable("town2") String town2,
+			@RequestParam(required = false) Integer maxStops,
+			@RequestBody() Rotas rotas) {
+		List<responseRotaDTO> menorCaminho = this.grafoService.buscarGrafoEListarRotas(graphId, town1, town2, maxStops);
+		return ResponseEntity.ok(menorCaminho);
+	}
+
 }

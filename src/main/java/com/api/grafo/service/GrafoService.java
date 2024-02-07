@@ -48,4 +48,9 @@ public class GrafoService {
 		return responses;
 	}
 
+	public List<responseRotaDTO> buscarGrafoEListarRotas(Long graphId, String town1, String town2, Integer maxStops) {
+		Rotas rotas = this.buscar(graphId);
+		return this.listarRotas(town1, town2, maxStops, rotas);
+	}
+
 }
