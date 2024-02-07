@@ -2,13 +2,17 @@ package com.api.grafo.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.JpaSort.Path;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.api.grafo.grafo.Dijkstra;
 import com.api.grafo.model.Grafo;
+import com.api.grafo.model.PathData;
 import com.api.grafo.model.Rotas;
 import com.api.grafo.model.dto.RotaDTO;
 import com.api.grafo.model.dto.responseRotaDTO;
@@ -51,6 +55,26 @@ public class GrafoService {
 	public List<responseRotaDTO> buscarGrafoEListarRotas(Long graphId, String town1, String town2, Integer maxStops) {
 		Rotas rotas = this.buscar(graphId);
 		return this.listarRotas(town1, town2, maxStops, rotas);
+	}
+
+	public Integer calcularDistancia(PathData pathData) {
+		int totalDistance = 0;
+
+		for (int i = 0; i < pathData.getPath().size() - 1; i++) {
+			String source = pathData.getPath().get(i);
+			String target = pathData.getPath().get(i + 1);
+
+			Optional<Grafo> dataOptional = pathData.getData().stream()
+					.filter(d -> d.getSource().equals(source) && d.getTarget().equals(target))
+					.findFirst();
+
+			if (dataOptional.isPresent()) {
+				totalDistance += dataOptional.get().getDistance();
+			} else {
+				return -1;
+			}
+		}
+		return totalDistance;
 	}
 
 }

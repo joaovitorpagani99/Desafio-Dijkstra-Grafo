@@ -1,6 +1,7 @@
 package com.api.grafo.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.grafo.model.Grafo;
+import com.api.grafo.model.PathData;
 import com.api.grafo.model.Rotas;
 import com.api.grafo.model.dto.responseRotaDTO;
 import com.api.grafo.service.GrafoService;
@@ -56,6 +59,12 @@ public class GrafoController {
 			@RequestBody() Rotas rotas) {
 		List<responseRotaDTO> menorCaminho = this.grafoService.buscarGrafoEListarRotas(graphId, town1, town2, maxStops);
 		return ResponseEntity.ok(menorCaminho);
+	}
+
+	@PostMapping("/distance")
+	public ResponseEntity<Integer> calcularDistancia(@RequestBody PathData pathData) {
+		Integer totalDistance = this.grafoService.calcularDistancia(pathData);
+		return ResponseEntity.ok(totalDistance);
 	}
 
 }
