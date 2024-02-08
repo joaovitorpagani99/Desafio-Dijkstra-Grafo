@@ -94,11 +94,8 @@ public class Dijkstra {
 					fila.add(new AbstractMap.SimpleEntry<>(vizinho.getKey(), distancias.get(vizinho.getKey())));
 				}
 			}
-
 		}
-		if (distancias.get(destino) == Integer.MAX_VALUE)
-
-		{
+		if (distancias.get(destino) == Integer.MAX_VALUE) {
 			return new ResponsePayloadCaminhoMinimo(-1, new ArrayList<>());
 		}
 
@@ -106,7 +103,7 @@ public class Dijkstra {
 		Set<String> visitadosSet = new HashSet<>();
 		for (String vertice = destino; vertice != null; vertice = anteriores.get(vertice)) {
 			if (!visitadosSet.add(vertice)) {
-				throw new RuntimeException("Ciclo detectado em 'anteriores' a partir do vértice: " + vertice);
+				return new ResponsePayloadCaminhoMinimo(-1, new ArrayList<>());
 			}
 			caminho.add(0, vertice);
 		}

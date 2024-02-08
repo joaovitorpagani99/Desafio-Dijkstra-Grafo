@@ -81,6 +81,20 @@ public class GrafoController {
 		if (town1.equals(town2))
 			return new ResponseEntity<>(0, HttpStatus.OK);
 
+		ResponsePayloadCaminhoMinimo caminhoMinimo = this.grafoService.calcularDistanciaMinimaEntreBairros(town1, town2,
+				rotas);
+		return ResponseEntity.ok(caminhoMinimo);
+	}
+
+	@PostMapping("/distance/{graphId}/from/{town1}/to/{town2}")
+	public ResponseEntity<?> getDeterminarADistanciaMinima(
+			@PathVariable("graphId") Long graphId,
+			@PathVariable("town1") String town1,
+			@PathVariable("town2") String town2) {
+		if (town1.equals(town2))
+			return new ResponseEntity<>(0, HttpStatus.OK);
+		Rotas rotas = this.grafoService.buscar(graphId);
+
 		ResponsePayloadCaminhoMinimo totalDistance = this.grafoService.calcularDistanciaMinimaEntreBairros(town1, town2,
 				rotas);
 		return ResponseEntity.ok(totalDistance);
