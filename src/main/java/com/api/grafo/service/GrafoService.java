@@ -3,17 +3,13 @@ package com.api.grafo.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.JpaSort.Path;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import com.api.grafo.grafo.Dijkstra;
 import com.api.grafo.model.Grafo;
 import com.api.grafo.model.PathData;
 import com.api.grafo.model.Rotas;
+import com.api.grafo.model.dto.ResponsePayloadCaminhoMinimo;
 import com.api.grafo.model.dto.RotaDTO;
 import com.api.grafo.model.dto.responseRotaDTO;
 import com.api.grafo.repository.GrafoRepository;
@@ -58,23 +54,27 @@ public class GrafoService {
 	}
 
 	public Integer calcularDistancia(PathData pathData) {
-		int totalDistance = 0;
-
-		for (int i = 0; i < pathData.getPath().size() - 1; i++) {
-			String source = pathData.getPath().get(i);
-			String target = pathData.getPath().get(i + 1);
-
-			Optional<Grafo> dataOptional = pathData.getData().stream()
-					.filter(d -> d.getSource().equals(source) && d.getTarget().equals(target))
-					.findFirst();
-
-			if (dataOptional.isPresent()) {
-				totalDistance += dataOptional.get().getDistance();
-			} else {
-				return -1;
-			}
-		}
-		return totalDistance;
+		Dijkstra dijkstra = new Dijkstra();
+		List<Grafo> rotas = pathData.getData();
+		dijkstra.adicionarRotas(rotas);
+		return dijkstra.calcularDistanciaCaminho(pathData.getPath(), pathData.getData());
 	}
 
+	public Integer calcularDistanciaComGrafoSalvo(Long graphId, PathData pathData) {
+		Rotas rota = this.buscar(graphId);
+		System.out.println(rota);
+		Dijkstra dijkstra = new Dijkstra();
+		pathData.setData(rota.getData());
+		List<Grafo> rotas = pathData.getData();
+		System.out.println(rotas);
+		dijkstra.adicionarRotas(rotas);
+		return dijkstra.calcularDistanciaCaminho(pathData.getPath(), pathData.getData());
+	}
+
+	public ResponsePayloadCaminhoMinimo calcularDistanciaMinimaEntreBairros(String town1, String town2, Rotas rotas) {
+		Dijkstra dijkstra = new Dijkstra();
+		dijkstra.adicionarRotas(rotas.getData());
+		ResponsePayloadCaminhoMinimo response = dijkstra.dijkstra(town1, town2);
+		return response;
+	}
 }

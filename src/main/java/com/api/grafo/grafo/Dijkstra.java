@@ -4,7 +4,7 @@ import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 
 import com.api.grafo.model.Grafo;
-import com.api.grafo.model.Rotas;
+import com.api.grafo.model.dto.ResponsePayloadCaminhoMinimo;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.HashSet;
 
 public class Dijkstra {
 	private Map<String, List<AbstractMap.SimpleEntry<String, Integer>>> listaAdjacente;
@@ -55,11 +58,12 @@ public class Dijkstra {
 		return null;
 	}
 
-	public List<String> dijkstra(String origem, String destino) {
+	public ResponsePayloadCaminhoMinimo dijkstra(String origem, String destino) {
 		Map<String, Integer> distancias = new HashMap<>();
 		Map<String, String> anteriores = new HashMap<>();
 		PriorityQueue<AbstractMap.SimpleEntry<String, Integer>> fila = new PriorityQueue<>(
 				Comparator.comparingInt(AbstractMap.SimpleEntry::getValue));
+		Set<String> visitados = new HashSet<>();
 
 		for (String vertice : this.listaAdjacente.keySet()) {
 			if (vertice.equals(origem)) {
@@ -72,21 +76,43 @@ public class Dijkstra {
 
 		while (!fila.isEmpty()) {
 			String verticeAtual = fila.poll().getKey();
+			if (visitados.contains(verticeAtual)) {
+				continue;
+			}
+			visitados.add(verticeAtual);
+
 			for (AbstractMap.SimpleEntry<String, Integer> vizinho : this.listaAdjacente.get(verticeAtual)) {
 				int alternativaDistancia = distancias.get(verticeAtual) + vizinho.getValue();
 				if (alternativaDistancia < distancias.get(vizinho.getKey())) {
 					distancias.put(vizinho.getKey(), alternativaDistancia);
 					anteriores.put(vizinho.getKey(), verticeAtual);
+
+					fila = fila.stream()
+							.filter(p -> !p.getKey().equals(vizinho.getKey()))
+							.collect(Collectors.toCollection(() -> new PriorityQueue<>(
+									Comparator.comparingInt(AbstractMap.SimpleEntry::getValue))));
 					fila.add(new AbstractMap.SimpleEntry<>(vizinho.getKey(), distancias.get(vizinho.getKey())));
 				}
 			}
+
 		}
+		if (distancias.get(destino) == Integer.MAX_VALUE)
+
+		{
+			return new ResponsePayloadCaminhoMinimo(-1, new ArrayList<>());
+		}
+
 		List<String> caminho = new ArrayList<>();
+		Set<String> visitadosSet = new HashSet<>();
 		for (String vertice = destino; vertice != null; vertice = anteriores.get(vertice)) {
+			if (!visitadosSet.add(vertice)) {
+				throw new RuntimeException("Ciclo detectado em 'anteriores' a partir do vértice: " + vertice);
+			}
 			caminho.add(0, vertice);
 		}
 
-		return caminho;
+		int distancia = distancias.get(destino);
+		return new ResponsePayloadCaminhoMinimo(distancia, caminho);
 	}
 
 	public void listarGrafo() {
@@ -120,6 +146,25 @@ public class Dijkstra {
 				encontrarCaminhosDFS(vizinho.getKey(), destino, maximoParadas, caminho, caminhos);
 			}
 		}
+	}
+
+	public int calcularDistanciaCaminho(List<String> caminho, List<Grafo> arestas) {
+		int distanciaTotal = 0;
+
+		for (int i = 0; i < caminho.size() - 1; i++) {
+			String source = caminho.get(i);
+			String target = caminho.get(i + 1);
+
+			Grafo grafo = arestas.stream()
+					.filter(a -> a.getSource().equals(source) && a.getTarget().equals(target))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException(
+							"Não existe uma aresta entre " + source + " e " + target + "."));
+
+			distanciaTotal += grafo.getDistance();
+		}
+
+		return distanciaTotal;
 	}
 
 }
