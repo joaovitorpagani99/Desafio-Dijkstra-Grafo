@@ -3,7 +3,7 @@ package com.api.grafo.grafo;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 
-import com.api.grafo.model.Grafo;
+import com.api.grafo.model.Edge;
 import com.api.grafo.model.dto.ResponsePayloadCaminhoMinimo;
 
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,9 +39,9 @@ public class Dijkstra {
 		return true;
 	}
 
-	public void adicionarRotas(List<Grafo> rotas) {
-		for (Grafo rota : rotas) {
-			this.adicionarAresta(rota.getSource(), rota.getTarget(), rota.getDistance());
+	public void adicionarRotas(List<Edge> edges) {
+		for (Edge edge : edges) {
+			this.adicionarAresta(edge.getSource(), edge.getTarget(), edge.getDistance());
 		}
 	}
 
@@ -145,20 +146,26 @@ public class Dijkstra {
 		}
 	}
 
-	public int calcularDistanciaCaminho(List<String> caminho, List<Grafo> arestas) {
+	public int calcularDistanciaCaminho(List<String> caminho, List<Edge> arestas) {
+		if (caminho == null || caminho.size() <= 1) {
+			return 0;
+		}
+
 		int distanciaTotal = 0;
 
 		for (int i = 0; i < caminho.size() - 1; i++) {
 			String source = caminho.get(i);
 			String target = caminho.get(i + 1);
 
-			Grafo grafo = arestas.stream()
+			Optional<Edge> optionalEdge = arestas.stream()
 					.filter(a -> a.getSource().equals(source) && a.getTarget().equals(target))
-					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException(
-							"Não existe uma aresta entre " + source + " e " + target + "."));
+					.findFirst();
 
-			distanciaTotal += grafo.getDistance();
+			if (!optionalEdge.isPresent()) {
+				return -1;
+			}
+
+			distanciaTotal += optionalEdge.get().getDistance();
 		}
 
 		return distanciaTotal;

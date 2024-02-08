@@ -2,11 +2,10 @@ package com.api.grafo.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.api.grafo.grafo.Dijkstra;
-import com.api.grafo.model.Grafo;
+import com.api.grafo.model.Edge;
 import com.api.grafo.model.PathData;
 import com.api.grafo.model.Rotas;
 import com.api.grafo.model.dto.ResponsePayloadCaminhoMinimo;
@@ -32,8 +31,8 @@ public class GrafoService {
 
 	public List<responseRotaDTO> listarRotas(String town1, String town2, Integer maxStops, Rotas rotas) {
 		Dijkstra dijkstra = new Dijkstra();
-		List<Grafo> rotasAtual = rotas.getData();
-		dijkstra.adicionarRotas(rotasAtual);
+		List<Edge> arestasAtuais = rotas.getData();
+		dijkstra.adicionarRotas(arestasAtuais);
 		List<String> caminhos = dijkstra.encontrarCaminhosComMaximoParadas(town1, town2, maxStops);
 		List<responseRotaDTO> responses = new ArrayList<>();
 		for (String caminho : caminhos) {
@@ -55,19 +54,18 @@ public class GrafoService {
 
 	public Integer calcularDistancia(PathData pathData) {
 		Dijkstra dijkstra = new Dijkstra();
-		List<Grafo> rotas = pathData.getData();
-		dijkstra.adicionarRotas(rotas);
-		return dijkstra.calcularDistanciaCaminho(pathData.getPath(), pathData.getData());
+		List<Edge> arestas = pathData.getData();
+		dijkstra.adicionarRotas(arestas);
+		int distancia = dijkstra.calcularDistanciaCaminho(pathData.getPath(), pathData.getData());
+		return distancia;
 	}
 
 	public Integer calcularDistanciaComGrafoSalvo(Long graphId, PathData pathData) {
 		Rotas rota = this.buscar(graphId);
-		System.out.println(rota);
 		Dijkstra dijkstra = new Dijkstra();
 		pathData.setData(rota.getData());
-		List<Grafo> rotas = pathData.getData();
-		System.out.println(rotas);
-		dijkstra.adicionarRotas(rotas);
+		List<Edge> arestas = pathData.getData();
+		dijkstra.adicionarRotas(arestas);
 		return dijkstra.calcularDistanciaCaminho(pathData.getPath(), pathData.getData());
 	}
 

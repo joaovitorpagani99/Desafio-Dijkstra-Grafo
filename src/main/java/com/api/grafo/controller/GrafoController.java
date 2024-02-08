@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.grafo.model.PathData;
@@ -28,14 +27,18 @@ public class GrafoController {
 	private GrafoService grafoService;
 
 	@PostMapping
-	@ResponseStatus(code = HttpStatus.CREATED)
-	public Rotas salvarGrafo(@RequestBody() Rotas rotas) {
-		return this.grafoService.salvar(rotas);
+	public ResponseEntity<Rotas> salvarGrafo(@RequestBody() Rotas rotas) {
+		Rotas grafoSalvo = this.grafoService.salvar(rotas);
+		return ResponseEntity.status(201).body(grafoSalvo);
 	}
 
 	@GetMapping("/{graphId}")
-	public Rotas recuperarGrafo(@PathVariable("graphId") Long graphId) {
-		return this.grafoService.buscar(graphId);
+	public ResponseEntity<Rotas> recuperarGrafo(@PathVariable("graphId") Long graphId) {
+		try {
+			return ResponseEntity.ok(this.grafoService.buscar(graphId));
+		} catch (Exception e) {
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 	@PostMapping("/routes/from/{town1}/to/{town2}")
@@ -45,7 +48,8 @@ public class GrafoController {
 			@RequestParam(required = false) Integer maxStops,
 			@RequestBody() Rotas rotas) {
 
-		List<responseRotaDTO> menorCaminho = this.grafoService.listarRotas(town1, town2, maxStops, rotas);
+		List<responseRotaDTO> menorCaminho = this.grafoService.listarRotas(town1.toUpperCase(), town2.toUpperCase(),
+				maxStops, rotas);
 		return ResponseEntity.ok(menorCaminho);
 	}
 
@@ -56,8 +60,15 @@ public class GrafoController {
 			@PathVariable("town2") String town2,
 			@RequestParam(required = false) Integer maxStops,
 			@RequestBody() Rotas rotas) {
-		List<responseRotaDTO> menorCaminho = this.grafoService.buscarGrafoEListarRotas(graphId, town1, town2, maxStops);
-		return ResponseEntity.ok(menorCaminho);
+		try {
+			List<responseRotaDTO> menorCaminho = this.grafoService.buscarGrafoEListarRotas(graphId, town1.toUpperCase(),
+					town2.toUpperCase(),
+					maxStops);
+			return ResponseEntity.ok(menorCaminho);
+		} catch (Exception e) {
+			return ResponseEntity.notFound().build();
+		}
+
 	}
 
 	@PostMapping("/distance")
@@ -69,8 +80,12 @@ public class GrafoController {
 	@PostMapping("/distance/{graphId}")
 	public ResponseEntity<Integer> calcularDistanciaComGrafoSalvo(@PathVariable("graphId") Long graphId,
 			@RequestBody PathData pathData) {
-		Integer totalDistance = this.grafoService.calcularDistanciaComGrafoSalvo(graphId, pathData);
-		return ResponseEntity.ok(totalDistance);
+		try {
+			Integer totalDistance = this.grafoService.calcularDistanciaComGrafoSalvo(graphId, pathData);
+			return ResponseEntity.ok(totalDistance);
+		} catch (Exception e) {
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 	@PostMapping("/distance/from/{town1}/to/{town2}")
@@ -81,7 +96,8 @@ public class GrafoController {
 		if (town1.equals(town2))
 			return new ResponseEntity<>(0, HttpStatus.OK);
 
-		ResponsePayloadCaminhoMinimo caminhoMinimo = this.grafoService.calcularDistanciaMinimaEntreBairros(town1, town2,
+		ResponsePayloadCaminhoMinimo caminhoMinimo = this.grafoService.calcularDistanciaMinimaEntreBairros(
+				town1.toUpperCase(), town2.toUpperCase(),
 				rotas);
 		return ResponseEntity.ok(caminhoMinimo);
 	}
@@ -91,13 +107,18 @@ public class GrafoController {
 			@PathVariable("graphId") Long graphId,
 			@PathVariable("town1") String town1,
 			@PathVariable("town2") String town2) {
-		if (town1.equals(town2))
-			return new ResponseEntity<>(0, HttpStatus.OK);
-		Rotas rotas = this.grafoService.buscar(graphId);
+		try {
+			if (town1.equals(town2))
+				return new ResponseEntity<>(0, HttpStatus.OK);
+			Rotas rotas = this.grafoService.buscar(graphId);
 
-		ResponsePayloadCaminhoMinimo totalDistance = this.grafoService.calcularDistanciaMinimaEntreBairros(town1, town2,
-				rotas);
-		return ResponseEntity.ok(totalDistance);
+			ResponsePayloadCaminhoMinimo totalDistance = this.grafoService.calcularDistanciaMinimaEntreBairros(town1,
+					town2,
+					rotas);
+			return ResponseEntity.ok(totalDistance);
+		} catch (Exception e) {
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 }

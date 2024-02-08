@@ -17,12 +17,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Rotas {
-	
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Grafo> data;
+    private List<Edge> data;
 
 }

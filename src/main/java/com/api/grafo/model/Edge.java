@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Grafo {
+public class Edge {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PathData {
     private List<String> path;
-    private List<Grafo> data;
+    private List<Edge> data;
 }
